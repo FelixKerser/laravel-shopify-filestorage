@@ -45,7 +45,7 @@ test('upload runs stagedUploadsCreate, posts the binary, then fileCreate', funct
     $createRequest = $recorded[2][0];
 
     expect($stagedRequest->url())->toBe(SHOPIFY_GRAPHQL)
-        ->and($stagedRequest->hasHeader('X-Shopify-Access-Token', 'shpat_test_token'))->toBeTrue()
+        ->and($stagedRequest->hasHeader('X-Shopify-Access-Token', 'oauth_test_token'))->toBeTrue()
         ->and($stagedRequest->data()['variables']['input'][0])->toMatchArray([
             'filename' => 'banner.jpg',
             'mimeType' => 'image/jpeg',
@@ -232,17 +232,23 @@ test('a missing local file throws before any http call', function () {
     Http::assertNothingSent();
 });
 
-test('an empty shop domain or access token is rejected', function () {
+test('an empty shop domain or client credentials are rejected', function () {
     config()->set('shopify-filestorage.shop_domain', '   ');
 
     expect(fn () => ShopifyFileStorage::upload(shopifyFixture('banner.jpg', shopifyJpegBytes()))->asImage()->save())
         ->toThrow(ShopifyGraphQLException::class, 'shop domain');
 
     config()->set('shopify-filestorage.shop_domain', 'demo-shop.myshopify.com');
-    config()->set('shopify-filestorage.access_token', '');
+    config()->set('shopify-filestorage.client_id', '');
 
     expect(fn () => ShopifyFileStorage::upload(shopifyFixture('banner.jpg', shopifyJpegBytes()))->asImage()->save())
-        ->toThrow(ShopifyGraphQLException::class, 'access token');
+        ->toThrow(ShopifyGraphQLException::class, 'client id');
+
+    config()->set('shopify-filestorage.client_id', 'test-client-id');
+    config()->set('shopify-filestorage.client_secret', ' ');
+
+    expect(fn () => ShopifyFileStorage::upload(shopifyFixture('banner.jpg', shopifyJpegBytes()))->asImage()->save())
+        ->toThrow(ShopifyGraphQLException::class, 'client secret');
 });
 
 /**

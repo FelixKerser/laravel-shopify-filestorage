@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace FelixKerser\ShopifyFileStorage\Tests;
 
 use FelixKerser\ShopifyFileStorage\Facades\ShopifyFileStorage;
+use FelixKerser\ShopifyFileStorage\Services\ShopifyOAuthClient;
 use FelixKerser\ShopifyFileStorage\ShopifyFileStorageServiceProvider;
+use Illuminate\Support\Facades\Cache;
 use Orchestra\Testbench\TestCase as Orchestra;
 
 class TestCase extends Orchestra
@@ -27,8 +29,20 @@ class TestCase extends Orchestra
     public function getEnvironmentSetUp($app): void
     {
         config()->set('shopify-filestorage.shop_domain', 'demo-shop.myshopify.com');
-        config()->set('shopify-filestorage.access_token', 'shpat_test_token');
+        config()->set('shopify-filestorage.client_id', 'test-client-id');
+        config()->set('shopify-filestorage.client_secret', 'test-client-secret');
         config()->set('shopify-filestorage.api_version', '2026-01');
         config()->set('shopify-filestorage.timeout', 30);
+    }
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        Cache::put(
+            ShopifyOAuthClient::cacheKey('demo-shop.myshopify.com', 'test-client-id', 'test-client-secret'),
+            'oauth_test_token',
+            3600,
+        );
     }
 }

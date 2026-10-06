@@ -14,6 +14,8 @@ use Illuminate\Support\Facades\Http;
 
 class ShopifyCdnClient
 {
+    public function __construct(private readonly ShopifyOAuthClient $oauth) {}
+
     private const FILE_SELECTION = <<<'GRAPHQL'
         __typename
         ... on MediaImage {
@@ -272,7 +274,7 @@ class ShopifyCdnClient
     private function request(): PendingRequest
     {
         return Http::withHeaders([
-            'X-Shopify-Access-Token' => $this->accessToken(),
+            'X-Shopify-Access-Token' => $this->oauth->accessToken(),
         ])
             ->acceptJson()
             ->asJson()
@@ -282,13 +284,7 @@ class ShopifyCdnClient
 
     private function endpoint(): string
     {
-        $domain = strtolower(trim((string) config('shopify-filestorage.shop_domain')));
-        $domain = preg_replace('#^https?://#i', '', $domain) ?? $domain;
-        $domain = rtrim($domain, '/');
-
-        if ($domain === '' || str_contains($domain, '/')) {
-            throw new ShopifyGraphQLException('Shopify shop domain is not configured.');
-        }
+        $domain = $this->oauth->host();
 
         $version = trim((string) config('shopify-filestorage.api_version', '2026-01'));
 
@@ -297,17 +293,6 @@ class ShopifyCdnClient
         }
 
         return sprintf('https://%s/admin/api/%s/graphql.json', $domain, $version);
-    }
-
-    private function accessToken(): string
-    {
-        $token = trim((string) config('shopify-filestorage.access_token'));
-
-        if ($token === '') {
-            throw new ShopifyGraphQLException('Shopify access token is not configured.');
-        }
-
-        return $token;
     }
 
     /**

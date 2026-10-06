@@ -11,9 +11,12 @@ return [
     'shop_domain' => env('SHOPIFY_SHOP_DOMAIN'),
 
     /*
-     * Admin API access token. The app needs read_files and write_files.
+     * Dev Dashboard app credentials. The client credentials grant exchanges
+     * these for an access token. The app needs read_files and write_files.
      */
-    'access_token' => env('SHOPIFY_ADMIN_ACCESS_TOKEN'),
+    'client_id' => env('SHOPIFY_CLIENT_ID'),
+
+    'client_secret' => env('SHOPIFY_CLIENT_SECRET'),
 
     /*
      * Admin GraphQL version used in /admin/api/{version}/graphql.json.
@@ -21,7 +24,7 @@ return [
     'api_version' => env('SHOPIFY_API_VERSION', '2026-01'),
 
     /*
-     * Seconds for both the GraphQL call and the staged binary upload.
+     * Seconds for the OAuth token request, the GraphQL call, and the staged binary upload.
      */
     'timeout' => (int) env('SHOPIFY_HTTP_TIMEOUT', 30),
 

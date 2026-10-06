@@ -5,6 +5,7 @@ All notable changes to `felixkerser/laravel-shopify-filestorage` are documented 
 ## Unreleased
 
 - Support Laravel 12 and 13, alongside Laravel 10 and 11.
+- Authenticate with the OAuth 2.0 client credentials grant. Configure `SHOPIFY_CLIENT_ID` and `SHOPIFY_CLIENT_SECRET` instead of a static Admin API access token.
 
 ## 1.0.0 - 2026-10-05
 

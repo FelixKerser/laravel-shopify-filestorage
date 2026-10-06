@@ -6,6 +6,7 @@ namespace FelixKerser\ShopifyFileStorage;
 
 use FelixKerser\ShopifyFileStorage\Actions\UploadFileAction;
 use FelixKerser\ShopifyFileStorage\Services\ShopifyCdnClient;
+use FelixKerser\ShopifyFileStorage\Services\ShopifyOAuthClient;
 use Spatie\LaravelPackageTools\Package;
 use Spatie\LaravelPackageTools\PackageServiceProvider;
 
@@ -20,6 +21,7 @@ class ShopifyFileStorageServiceProvider extends PackageServiceProvider
 
     public function packageRegistered(): void
     {
+        $this->app->singleton(ShopifyOAuthClient::class);
         $this->app->singleton(ShopifyCdnClient::class);
         $this->app->singleton(UploadFileAction::class);
         $this->app->singleton(ShopifyFileStorage::class);
