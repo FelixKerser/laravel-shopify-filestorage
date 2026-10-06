@@ -19,6 +19,8 @@ SHOPIFY_HTTP_TIMEOUT=30
 
 Publish the config with `php artisan vendor:publish --tag=shopify-filestorage-config`.
 
+Multiple shops: add `stores` in config and call `ShopifyFileStorage::store('eu')->upload(...)` (or `connection()`). Credentials inherit from the default store when omitted. One-off tenants: `ShopifyFileStorage::using([...])->upload(...)`. Persist the store name with each Admin file GID.
+
 The package exchanges `client_id` and `client_secret` at `POST https://{shop}/admin/oauth/access_token` with `grant_type=client_credentials`. It caches `access_token` and refreshes it 60 seconds before `expires_in`. The app and store must be in the same Shopify organization. Scopes: `read_files`, `write_files`.
 
 ## Upload

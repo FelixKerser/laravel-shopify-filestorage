@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace FelixKerser\ShopifyFileStorage\Services;
 
+use FelixKerser\ShopifyFileStorage\DTOs\ShopifyStoreConfig;
 use FelixKerser\ShopifyFileStorage\Exceptions\ShopifyGraphQLException;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
@@ -12,24 +13,18 @@ class ShopifyOAuthClient
 {
     private const REFRESH_SKEW_SECONDS = 60;
 
+    public function __construct(private readonly ShopifyStoreConfig $config) {}
+
     public function host(): string
     {
-        $domain = strtolower(trim((string) config('shopify-filestorage.shop_domain')));
-        $domain = preg_replace('#^https?://#i', '', $domain) ?? $domain;
-        $domain = rtrim($domain, '/');
-
-        if ($domain === '' || str_contains($domain, '/')) {
-            throw new ShopifyGraphQLException('Shopify shop domain is not configured.');
-        }
-
-        return $domain;
+        return $this->config->host();
     }
 
     public function accessToken(): string
     {
         $host = $this->host();
-        $clientId = $this->credential('client_id', 'Shopify client id is not configured.');
-        $clientSecret = $this->credential('client_secret', 'Shopify client secret is not configured.');
+        $clientId = $this->config->clientId;
+        $clientSecret = $this->config->clientSecret;
         $cacheKey = self::cacheKey($host, $clientId, $clientSecret);
         $cached = Cache::get($cacheKey);
 
@@ -39,7 +34,7 @@ class ShopifyOAuthClient
 
         $response = Http::asForm()
             ->acceptJson()
-            ->timeout($this->timeout())
+            ->timeout($this->config->timeout)
             ->connectTimeout(3)
             ->post($this->tokenEndpoint($host), [
                 'grant_type' => 'client_credentials',
@@ -91,17 +86,6 @@ class ShopifyOAuthClient
         return sprintf('https://%s/admin/oauth/access_token', $host);
     }
 
-    private function credential(string $key, string $message): string
-    {
-        $value = trim((string) config('shopify-filestorage.'.$key));
-
-        if ($value === '') {
-            throw new ShopifyGraphQLException($message);
-        }
-
-        return $value;
-    }
-
     private function cacheTtl(mixed $expiresIn): int
     {
         if (! is_int($expiresIn) && ! (is_string($expiresIn) && is_numeric($expiresIn))) {
@@ -136,12 +120,5 @@ class ShopifyOAuthClient
         }
 
         return $message.' '.$error;
-    }
-
-    private function timeout(): int
-    {
-        $timeout = (int) config('shopify-filestorage.timeout', 30);
-
-        return $timeout > 0 ? $timeout : 30;
     }
 }

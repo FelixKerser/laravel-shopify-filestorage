@@ -73,17 +73,51 @@ Every GraphQL request sends that access token in `X-Shopify-Access-Token`. The c
 
 The app and the store must belong to the same Shopify organization, and the app must be installed on the store. The client credentials grant is the Dev Dashboard replacement for a static Admin API access token.
 
-The published file is:
+The published file defines a default store, optional legacy flat credentials, and a `stores` map. Flat `SHOPIFY_*` keys still override `stores.default` at runtime.
+
+## Multiple stores
+
+Name each Shopify shop under `stores`. `client_id` and `client_secret` inherit from the default store when they are omitted on another store. Set `SHOPIFY_FILESTORAGE_STORE` to change which store `ShopifyFileStorage::upload()` uses without an explicit store call.
+
+```dotenv
+SHOPIFY_FILESTORAGE_STORE=default
+SHOPIFY_SHOP_DOMAIN=your-shop.myshopify.com
+SHOPIFY_CLIENT_ID=your-client-id
+SHOPIFY_CLIENT_SECRET=your-client-secret
+SHOPIFY_EU_SHOP_DOMAIN=eu-shop.myshopify.com
+```
 
 ```php
-return [
-    'shop_domain' => env('SHOPIFY_SHOP_DOMAIN'),
-    'client_id' => env('SHOPIFY_CLIENT_ID'),
-    'client_secret' => env('SHOPIFY_CLIENT_SECRET'),
-    'api_version' => env('SHOPIFY_API_VERSION', '2026-01'),
-    'timeout' => (int) env('SHOPIFY_HTTP_TIMEOUT', 30),
-];
+'stores' => [
+    'default' => [
+        'shop_domain' => env('SHOPIFY_SHOP_DOMAIN'),
+        'client_id' => env('SHOPIFY_CLIENT_ID'),
+        'client_secret' => env('SHOPIFY_CLIENT_SECRET'),
+    ],
+    'eu' => [
+        'shop_domain' => env('SHOPIFY_EU_SHOP_DOMAIN'),
+    ],
+],
 ```
+
+Pick a store before upload, fetch, or delete. Admin file GIDs belong to one shop, so keep the store name beside each GID in the application database.
+
+```php
+ShopifyFileStorage::store('eu')->upload($path)->asImage()->save();
+ShopifyFileStorage::connection('eu')->getByIds([$gid]);
+```
+
+For a one-off shop configuration, `using()` builds a client without adding it to `stores`:
+
+```php
+ShopifyFileStorage::using([
+    'shop_domain' => 'tenant.myshopify.com',
+    'client_id' => '...',
+    'client_secret' => '...',
+])->upload($file)->save();
+```
+
+After changing store credentials in config at runtime, call `ShopifyFileStorage::purge()` so cached connections are rebuilt.
 
 ## Upload a file
 

@@ -28,11 +28,19 @@ class TestCase extends Orchestra
 
     public function getEnvironmentSetUp($app): void
     {
+        config()->set('shopify-filestorage.default', 'default');
         config()->set('shopify-filestorage.shop_domain', 'demo-shop.myshopify.com');
         config()->set('shopify-filestorage.client_id', 'test-client-id');
         config()->set('shopify-filestorage.client_secret', 'test-client-secret');
         config()->set('shopify-filestorage.api_version', '2026-01');
         config()->set('shopify-filestorage.timeout', 30);
+        config()->set('shopify-filestorage.stores', [
+            'default' => [
+                'shop_domain' => 'demo-shop.myshopify.com',
+                'client_id' => 'test-client-id',
+                'client_secret' => 'test-client-secret',
+            ],
+        ]);
     }
 
     protected function setUp(): void

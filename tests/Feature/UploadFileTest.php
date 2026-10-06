@@ -234,18 +234,25 @@ test('a missing local file throws before any http call', function () {
 
 test('an empty shop domain or client credentials are rejected', function () {
     config()->set('shopify-filestorage.shop_domain', '   ');
+    config()->set('shopify-filestorage.stores.default.shop_domain', '   ');
 
     expect(fn () => ShopifyFileStorage::upload(shopifyFixture('banner.jpg', shopifyJpegBytes()))->asImage()->save())
         ->toThrow(ShopifyGraphQLException::class, 'shop domain');
 
+    ShopifyFileStorage::purge();
     config()->set('shopify-filestorage.shop_domain', 'demo-shop.myshopify.com');
+    config()->set('shopify-filestorage.stores.default.shop_domain', 'demo-shop.myshopify.com');
     config()->set('shopify-filestorage.client_id', '');
+    config()->set('shopify-filestorage.stores.default.client_id', '');
 
     expect(fn () => ShopifyFileStorage::upload(shopifyFixture('banner.jpg', shopifyJpegBytes()))->asImage()->save())
         ->toThrow(ShopifyGraphQLException::class, 'client id');
 
+    ShopifyFileStorage::purge();
     config()->set('shopify-filestorage.client_id', 'test-client-id');
+    config()->set('shopify-filestorage.stores.default.client_id', 'test-client-id');
     config()->set('shopify-filestorage.client_secret', ' ');
+    config()->set('shopify-filestorage.stores.default.client_secret', ' ');
 
     expect(fn () => ShopifyFileStorage::upload(shopifyFixture('banner.jpg', shopifyJpegBytes()))->asImage()->save())
         ->toThrow(ShopifyGraphQLException::class, 'client secret');

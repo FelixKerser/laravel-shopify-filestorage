@@ -59,7 +59,8 @@ jobs:
 
       - name: Install dependencies
         run: |
-          composer require "laravel/framework:${{ matrix.laravel }}" "orchestra/testbench:${{ matrix.testbench }}" --no-interaction --no-update
+          composer config --no-ansi audit.block-insecure false
+          composer require --dev "laravel/framework:${{ matrix.laravel }}" "orchestra/testbench:${{ matrix.testbench }}" --no-interaction --no-update
           composer update --prefer-dist --no-interaction --no-progress
 
       - name: Execute tests
@@ -81,7 +82,9 @@ jobs:
           coverage: none
 
       - name: Install dependencies
-        run: composer update --prefer-dist --no-interaction --no-progress
+        run: |
+          composer config --no-ansi audit.block-insecure false
+          composer update --prefer-dist --no-interaction --no-progress
 
       - name: Run Larastan
         run: vendor/bin/phpstan analyse --no-progress

@@ -4,7 +4,7 @@
 
 ### Authentication
 
-Publish `shopify-filestorage-config` when the app should own the credentials. Configure `SHOPIFY_SHOP_DOMAIN`, `SHOPIFY_CLIENT_ID`, and `SHOPIFY_CLIENT_SECRET`. The client posts the OAuth 2.0 client credentials grant to `https://{shop}/admin/oauth/access_token` and caches the access token until 60 seconds before `expires_in`. GraphQL requests send that token in `X-Shopify-Access-Token`. The app and the store must belong to the same Shopify organization, the app must be installed, and the scopes must include `read_files` and `write_files`.
+Publish `shopify-filestorage-config` when the app should own the credentials. Configure `SHOPIFY_SHOP_DOMAIN`, `SHOPIFY_CLIENT_ID`, and `SHOPIFY_CLIENT_SECRET`, or add named entries under `stores`. Use `ShopifyFileStorage::store('name')` when Admin calls target a shop other than the default. Keep the store name with each Shopify file GID in the database. The client posts the OAuth 2.0 client credentials grant to `https://{shop}/admin/oauth/access_token` and caches the access token until 60 seconds before `expires_in`. GraphQL requests send that token in `X-Shopify-Access-Token`. The app and the store must belong to the same Shopify organization, the app must be installed, and the scopes must include `read_files` and `write_files`.
 
 ### Uploads
 

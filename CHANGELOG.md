@@ -4,6 +4,12 @@ All notable changes to `felixkerser/laravel-shopify-filestorage` are documented 
 
 ## Unreleased
 
+## 0.0.2 - 2026-10-06
+
+- Named Shopify stores through `stores` in config, `ShopifyFileStorage::store()` / `connection()`, and one-off `using()` overrides.
+- Legacy flat `SHOPIFY_SHOP_DOMAIN`, `SHOPIFY_CLIENT_ID`, and `SHOPIFY_CLIENT_SECRET` still configure the default store.
+- CI installs Laravel matrix dependencies with Composer audit blocking disabled for framework advisories during package tests.
+
 ## 0.0.1 - 2026-10-06
 
 - Staged Shopify file uploads through `stagedUploadsCreate`, a multipart binary POST, and `fileCreate`.

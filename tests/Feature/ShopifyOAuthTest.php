@@ -100,6 +100,8 @@ test('changing the client secret requests a new token', function () {
     );
 
     config()->set('shopify-filestorage.client_secret', 'rotated-secret');
+    config()->set('shopify-filestorage.stores.default.client_secret', 'rotated-secret');
+    ShopifyFileStorage::purge();
 
     Http::fake(function (Request $request) {
         if ($request->url() === SHOPIFY_TOKEN_URL) {

@@ -158,7 +158,85 @@ test('blank file ids are rejected', function () {
 test('published config keeps the documented defaults', function () {
     $config = require dirname(__DIR__, 2).'/config/shopify-filestorage.php';
 
-    expect($config)->toHaveKeys(['shop_domain', 'client_id', 'client_secret', 'api_version', 'timeout'])
+    expect($config)->toHaveKeys([
+        'default',
+        'stores',
+        'shop_domain',
+        'client_id',
+        'client_secret',
+        'api_version',
+        'timeout',
+    ])
+        ->and($config['default'])->toBe('default')
         ->and($config['api_version'])->toBe('2026-01')
-        ->and($config['timeout'])->toBe(30);
+        ->and($config['timeout'])->toBe(30)
+        ->and($config['stores']['default'])->toHaveKeys(['shop_domain', 'client_id', 'client_secret']);
+});
+
+test('store selects a named shopify store', function () {
+    ShopifyFileStorage::purge();
+
+    config()->set('shopify-filestorage.stores.eu', [
+        'shop_domain' => 'eu-shop.myshopify.com',
+    ]);
+
+    Http::fake(function (Request $request) {
+        if ($request->url() === 'https://eu-shop.myshopify.com/admin/oauth/access_token') {
+            return Http::response([
+                'access_token' => 'oauth_eu_token',
+                'scope' => 'read_files,write_files',
+                'expires_in' => 86399,
+            ]);
+        }
+
+        return Http::response([
+            'data' => [
+                'nodes' => [
+                    [
+                        '__typename' => 'MediaImage',
+                        'id' => 'gid://shopify/MediaImage/9',
+                        'alt' => null,
+                        'fileStatus' => 'READY',
+                        'image' => ['url' => 'https://cdn.shopify.com/s/files/eu.jpg'],
+                    ],
+                ],
+            ],
+        ]);
+    });
+
+    $files = ShopifyFileStorage::store('eu')->getByIds(['gid://shopify/MediaImage/9']);
+
+    expect($files)->toHaveCount(1)
+        ->and($files[0]->url)->toBe('https://cdn.shopify.com/s/files/eu.jpg');
+
+    Http::assertSent(fn (Request $request): bool => str_contains($request->url(), 'eu-shop.myshopify.com')
+        && $request->hasHeader('X-Shopify-Access-Token', 'oauth_eu_token'));
+    Http::assertNotSent(fn (Request $request): bool => str_contains($request->url(), 'demo-shop.myshopify.com'));
+});
+
+test('using accepts a one-off store configuration', function () {
+    Http::fake(function (Request $request) {
+        if ($request->url() === 'https://pop-up.myshopify.com/admin/oauth/access_token') {
+            return Http::response([
+                'access_token' => 'oauth_pop_token',
+                'scope' => 'read_files,write_files',
+                'expires_in' => 86399,
+            ]);
+        }
+
+        return Http::response([
+            'data' => [
+                'nodes' => [],
+            ],
+        ]);
+    });
+
+    expect(ShopifyFileStorage::using([
+        'shop_domain' => 'pop-up.myshopify.com',
+        'client_id' => 'pop-client',
+        'client_secret' => 'pop-secret',
+    ])->getByIds(['gid://shopify/MediaImage/1']))->toBe([]);
+
+    Http::assertSent(fn (Request $request): bool => str_contains($request->url(), 'pop-up.myshopify.com')
+        && $request->hasHeader('X-Shopify-Access-Token', 'oauth_pop_token'));
 });

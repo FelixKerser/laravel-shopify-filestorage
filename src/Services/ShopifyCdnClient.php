@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace FelixKerser\ShopifyFileStorage\Services;
 
 use FelixKerser\ShopifyFileStorage\DTOs\ShopifyFile;
+use FelixKerser\ShopifyFileStorage\DTOs\ShopifyStoreConfig;
 use FelixKerser\ShopifyFileStorage\DTOs\StagedUploadTarget;
 use FelixKerser\ShopifyFileStorage\Enums\ShopifyResourceType;
 use FelixKerser\ShopifyFileStorage\Exceptions\ShopifyGraphQLException;
@@ -14,7 +15,10 @@ use Illuminate\Support\Facades\Http;
 
 class ShopifyCdnClient
 {
-    public function __construct(private readonly ShopifyOAuthClient $oauth) {}
+    public function __construct(
+        private readonly ShopifyOAuthClient $oauth,
+        private readonly ShopifyStoreConfig $config,
+    ) {}
 
     private const FILE_SELECTION = <<<'GRAPHQL'
         __typename
@@ -266,9 +270,7 @@ class ShopifyCdnClient
 
     public function timeout(): int
     {
-        $timeout = (int) config('shopify-filestorage.timeout', 30);
-
-        return $timeout > 0 ? $timeout : 30;
+        return $this->config->timeout;
     }
 
     private function request(): PendingRequest
@@ -284,15 +286,11 @@ class ShopifyCdnClient
 
     private function endpoint(): string
     {
-        $domain = $this->oauth->host();
-
-        $version = trim((string) config('shopify-filestorage.api_version', '2026-01'));
-
-        if ($version === '') {
-            throw new ShopifyGraphQLException('Shopify API version is not configured.');
-        }
-
-        return sprintf('https://%s/admin/api/%s/graphql.json', $domain, $version);
+        return sprintf(
+            'https://%s/admin/api/%s/graphql.json',
+            $this->oauth->host(),
+            $this->config->apiVersion,
+        );
     }
 
     /**
