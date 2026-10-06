@@ -28,19 +28,13 @@ jobs:
       fail-fast: true
       matrix:
         php: [8.2, 8.3, 8.4]
-        laravel: ['10.*', '11.*', '12.*', '13.*']
+        laravel: ['12.*', '13.*']
         include:
-          - laravel: 10.*
-            testbench: 8.*
-          - laravel: 11.*
-            testbench: 9.*
           - laravel: 12.*
             testbench: 10.*
           - laravel: 13.*
             testbench: 11.*
         exclude:
-          - php: 8.4
-            laravel: 10.*
           - php: 8.2
             laravel: 13.*
 
@@ -84,6 +78,7 @@ jobs:
       - name: Install dependencies
         run: |
           composer config --no-ansi audit.block-insecure false
+          composer require --dev "laravel/framework:13.*" "orchestra/testbench:11.*" --no-interaction --no-update
           composer update --prefer-dist --no-interaction --no-progress
 
       - name: Run Larastan

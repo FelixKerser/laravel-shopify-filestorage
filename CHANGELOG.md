@@ -4,6 +4,8 @@ All notable changes to `felixkerser/laravel-shopify-filestorage` are documented 
 
 ## Unreleased
 
+- Drop Laravel 10 and 11 support. The package requires Laravel 12 or 13.
+
 ## 0.0.2 - 2026-10-06
 
 - Named Shopify stores through `stores` in config, `ShopifyFileStorage::store()` / `connection()`, and one-off `using()` overrides.

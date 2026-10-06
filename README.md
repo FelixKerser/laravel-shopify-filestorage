@@ -10,7 +10,7 @@
   <a href="https://github.com/FelixKerser/laravel-shopify-filestorage/actions/workflows/run-tests.yml"><img src="https://img.shields.io/github/actions/workflow/status/FelixKerser/laravel-shopify-filestorage/run-tests.yml?branch=main&label=tests" alt="Tests"></a>
   <a href="https://packagist.org/packages/felixkerser/laravel-shopify-filestorage"><img src="https://img.shields.io/packagist/v/felixkerser/laravel-shopify-filestorage.svg" alt="Latest Version"></a>
   <a href="https://packagist.org/packages/felixkerser/laravel-shopify-filestorage"><img src="https://img.shields.io/packagist/php-v/felixkerser/laravel-shopify-filestorage.svg" alt="PHP Version"></a>
-  <a href="https://packagist.org/packages/felixkerser/laravel-shopify-filestorage"><img src="https://img.shields.io/badge/laravel-10%20%E2%80%93%2013-FF2D20" alt="Laravel 10 through 13"></a>
+  <a href="https://packagist.org/packages/felixkerser/laravel-shopify-filestorage"><img src="https://img.shields.io/badge/laravel-12%20%7C%2013-FF2D20" alt="Laravel 12 and 13"></a>
   <a href="LICENSE"><img src="https://img.shields.io/packagist/l/felixkerser/laravel-shopify-filestorage.svg" alt="License"></a>
 </p>
 
@@ -21,7 +21,7 @@ The Admin app needs the `read_files` and `write_files` scopes.
 ## Requirements
 
 - PHP 8.2 or newer. Laravel 13 needs PHP 8.3
-- Laravel 10.x, 11.x, 12.x, or 13.x
+- Laravel 12.x or 13.x
 - A Dev Dashboard app client id and client secret for the OAuth 2.0 client credentials grant
 
 The package is PSR-12, tested with Pest, and analysed with Larastan at level 8.
