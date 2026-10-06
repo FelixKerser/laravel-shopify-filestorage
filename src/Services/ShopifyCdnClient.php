@@ -453,7 +453,7 @@ class ShopifyCdnClient
     }
 
     /**
-     * @param  list<string>  $ids
+     * @param  array<mixed>  $ids
      * @return list<string>
      */
     private function normalizeIds(array $ids): array

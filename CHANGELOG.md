@@ -2,6 +2,10 @@
 
 All notable changes to `felixkerser/laravel-shopify-filestorage` are documented here.
 
+## Unreleased
+
+- Support Laravel 12 and 13, alongside Laravel 10 and 11.
+
 ## 1.0.0 - 2026-10-05
 
 - Staged Shopify file uploads through `stagedUploadsCreate`, a multipart binary POST, and `fileCreate`.
