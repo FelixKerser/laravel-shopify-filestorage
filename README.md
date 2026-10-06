@@ -206,6 +206,13 @@ ShopifyUrl::format(ShopifyUrl::resize($source, 800, 800, 'center'), 'webp');
 | `InvalidCdnUrlException` | `ShopifyUrl` receives a URL that is not a Shopify CDN image. |
 | `InvalidArgumentException` | A resize dimension, crop, or format is outside the supported set. |
 
+## Laravel Boost
+
+The package ships a Boost guideline and a skill. `php artisan boost:install` in the host application loads them from the installed package. This package does not depend on `laravel/boost`.
+
+- `resources/boost/guidelines/core.blade.php` is included in the agent guidelines.
+- `resources/boost/skills/shopify-filestorage/SKILL.md` is installed when skills are enabled.
+
 ## Testing
 
 ```bash
