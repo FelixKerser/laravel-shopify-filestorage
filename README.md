@@ -10,7 +10,7 @@
   <a href="https://github.com/FelixKerser/laravel-shopify-filestorage/actions/workflows/run-tests.yml"><img src="https://img.shields.io/github/actions/workflow/status/FelixKerser/laravel-shopify-filestorage/run-tests.yml?branch=main&label=tests" alt="Tests"></a>
   <a href="https://packagist.org/packages/felixkerser/laravel-shopify-filestorage"><img src="https://img.shields.io/packagist/v/felixkerser/laravel-shopify-filestorage.svg" alt="Latest Version"></a>
   <a href="https://packagist.org/packages/felixkerser/laravel-shopify-filestorage"><img src="https://img.shields.io/packagist/php-v/felixkerser/laravel-shopify-filestorage.svg" alt="PHP Version"></a>
-  <a href="https://packagist.org/packages/felixkerser/laravel-shopify-filestorage"><img src="https://img.shields.io/badge/laravel-10%20%7C%2011-FF2D20" alt="Laravel 10 and 11"></a>
+  <a href="https://packagist.org/packages/felixkerser/laravel-shopify-filestorage"><img src="https://img.shields.io/badge/laravel-10%20%E2%80%93%2013-FF2D20" alt="Laravel 10 through 13"></a>
   <a href="LICENSE"><img src="https://img.shields.io/packagist/l/felixkerser/laravel-shopify-filestorage.svg" alt="License"></a>
 </p>
 
@@ -20,9 +20,9 @@ The Admin app needs the `read_files` and `write_files` scopes.
 
 ## Requirements
 
-- PHP 8.2 or newer
-- Laravel 10.x or 11.x
-- A Shopify Admin API access token
+- PHP 8.2 or newer. Laravel 13 needs PHP 8.3
+- Laravel 10.x, 11.x, 12.x, or 13.x
+- A Dev Dashboard app client id and client secret for the OAuth 2.0 client credentials grant
 
 The package is PSR-12, tested with Pest, and analysed with Larastan at level 8.
 
@@ -44,29 +44,42 @@ This copies `config/shopify-filestorage.php` into the application.
 
 ## Configuration
 
-Set the shop host and the Admin token in `.env`:
+Set the shop host and the Dev Dashboard app credentials in `.env`:
 
 ```dotenv
 SHOPIFY_SHOP_DOMAIN=your-shop.myshopify.com
-SHOPIFY_ADMIN_ACCESS_TOKEN=shpat_xxxxxxxx
+SHOPIFY_CLIENT_ID=your-client-id
+SHOPIFY_CLIENT_SECRET=your-client-secret
 SHOPIFY_API_VERSION=2026-01
 SHOPIFY_HTTP_TIMEOUT=30
 ```
 
-`shop_domain` accepts a bare host or a host with a scheme. The client calls:
+`shop_domain` accepts a bare host or a host with a scheme. Before the first Admin call, the client posts the OAuth 2.0 client credentials grant:
+
+```text
+POST https://{shop_domain}/admin/oauth/access_token
+grant_type=client_credentials
+client_id={client_id}
+client_secret={client_secret}
+```
+
+Shopify returns `access_token`, `scope`, and `expires_in` (`86399` seconds). The package stores the token in the application cache and requests a new one 60 seconds before it expires. A changed client id or client secret uses a new cache entry. GraphQL calls then go to:
 
 ```text
 https://{shop_domain}/admin/api/{api_version}/graphql.json
 ```
 
-Every GraphQL request sends `X-Shopify-Access-Token`. `api_version` defaults to `2026-01`. `timeout` defaults to `30` seconds and covers both the GraphQL call and the staged binary upload.
+Every GraphQL request sends that access token in `X-Shopify-Access-Token`. The client secret is not sent to GraphQL. `api_version` defaults to `2026-01`. `timeout` defaults to `30` seconds and covers the token request, the GraphQL call, and the staged binary upload.
+
+The app and the store must belong to the same Shopify organization, and the app must be installed on the store. The client credentials grant is the Dev Dashboard replacement for a static Admin API access token.
 
 The published file is:
 
 ```php
 return [
     'shop_domain' => env('SHOPIFY_SHOP_DOMAIN'),
-    'access_token' => env('SHOPIFY_ADMIN_ACCESS_TOKEN'),
+    'client_id' => env('SHOPIFY_CLIENT_ID'),
+    'client_secret' => env('SHOPIFY_CLIENT_SECRET'),
     'api_version' => env('SHOPIFY_API_VERSION', '2026-01'),
     'timeout' => (int) env('SHOPIFY_HTTP_TIMEOUT', 30),
 ];
@@ -189,7 +202,7 @@ ShopifyUrl::format(ShopifyUrl::resize($source, 800, 800, 'center'), 'webp');
 | Exception | When it is thrown |
 | --- | --- |
 | `ShopifyUploadException` | The local file cannot be read, `stagedUploadsCreate` or `fileCreate` returns `userErrors`, or the staged storage target rejects the multipart POST. `step` is `read`, `stagedUploadsCreate`, `binaryUpload`, or `fileCreate`. |
-| `ShopifyGraphQLException` | The Admin HTTP call fails, GraphQL returns a top-level `errors` payload, or `getByIds` / `delete` cannot be completed. `statusCode` is set for an HTTP failure. |
+| `ShopifyGraphQLException` | The OAuth token request fails, the Admin HTTP call fails, GraphQL returns a top-level `errors` payload, or `getByIds` / `delete` cannot be completed. `statusCode` is set for an HTTP failure. |
 | `InvalidCdnUrlException` | `ShopifyUrl` receives a URL that is not a Shopify CDN image. |
 | `InvalidArgumentException` | A resize dimension, crop, or format is outside the supported set. |
 
@@ -201,7 +214,7 @@ composer analyse
 composer format
 ```
 
-`composer test` runs the Pest suite. Upload tests fake the Admin GraphQL endpoint and the staged storage URL with `Http::fake()`.
+`composer test` runs the Pest suite. Upload tests fake the OAuth token endpoint, the Admin GraphQL endpoint, and the staged storage URL with `Http::fake()`.
 
 ## Changelog
 

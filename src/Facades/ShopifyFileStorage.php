@@ -8,8 +8,8 @@ use Illuminate\Support\Facades\Facade;
 
 /**
  * @method static \FelixKerser\ShopifyFileStorage\PendingUpload upload(string|\Illuminate\Http\File|\Illuminate\Http\UploadedFile $file)
- * @method static list<\FelixKerser\ShopifyFileStorage\DTOs\ShopifyFile> getByIds(array $gids)
- * @method static bool delete(string|array $gids)
+ * @method static list<\FelixKerser\ShopifyFileStorage\DTOs\ShopifyFile> getByIds(array<int, string> $gids)
+ * @method static bool delete(string|array<array-key, string> $gids)
  *
  * @see \FelixKerser\ShopifyFileStorage\ShopifyFileStorage
  */

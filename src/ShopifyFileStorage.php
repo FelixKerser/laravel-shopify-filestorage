@@ -32,7 +32,7 @@ class ShopifyFileStorage
     }
 
     /**
-     * @param  string|list<string>  $gids
+     * @param  string|array<array-key, string>  $gids
      */
     public function delete(string|array $gids): bool
     {

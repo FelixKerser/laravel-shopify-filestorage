@@ -63,7 +63,7 @@ test('getByIds returns files in request order and skips missing nodes', function
         ->and($files[2]->mediaType)->toBe('VIDEO')
         ->and($files[2]->url)->toBe('https://cdn.shopify.com/videos/clip.mp4');
 
-    Http::assertSent(fn (Request $request): bool => $request->hasHeader('X-Shopify-Access-Token', 'shpat_test_token')
+    Http::assertSent(fn (Request $request): bool => $request->hasHeader('X-Shopify-Access-Token', 'oauth_test_token')
         && $request->data()['variables']['ids'] === [
             'gid://shopify/MediaImage/1',
             'gid://shopify/Missing/0',
@@ -158,7 +158,7 @@ test('blank file ids are rejected', function () {
 test('published config keeps the documented defaults', function () {
     $config = require dirname(__DIR__, 2).'/config/shopify-filestorage.php';
 
-    expect($config)->toHaveKeys(['shop_domain', 'access_token', 'api_version', 'timeout'])
+    expect($config)->toHaveKeys(['shop_domain', 'client_id', 'client_secret', 'api_version', 'timeout'])
         ->and($config['api_version'])->toBe('2026-01')
         ->and($config['timeout'])->toBe(30);
 });
